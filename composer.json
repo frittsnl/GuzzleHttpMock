@@ -9,7 +9,7 @@
     "http",
     "client"
   ],
-  "license": "GPL",
+  "license": "GPL-3.0-or-later",
   "authors": [
     {
       "name": "Edan Schwartz",
