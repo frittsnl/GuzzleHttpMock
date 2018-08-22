@@ -80,11 +80,11 @@ class RequestExpectation {
 	 * @param RequestInterface $request
 	 */
 	public function setExpectedRequest($request) {
-	    parse_str($request->getUri()->getQuery(), $query);
+		parse_str($request->getUri()->getQuery(), $query);
 		$this
 			->withUrl($request->getUri())
 			->withMethod($request->getMethod())
-            ->withQueryParams($query);
+			->withQueryParams($query);
 
 		if ($request->getBody() !== null) {
 			$this->withBody($request->getBody());
@@ -101,7 +101,7 @@ class RequestExpectation {
 	 * @return $this
 	 */
 	public function withUrl($url) {
-		$this->requestExpectations['url'] = new Expect\Predicate(function(RequestInterface $request) use ($url) {
+		$this->requestExpectations['url'] = new Expect\Predicate(function (RequestInterface $request) use ($url) {
 			$expectation = is_callable($url) ? $url : new Expect\Equals(explode('?', $url)[0], 'url');
 			$actualUrl = explode('?', (string)$request->getUri())[0];
 
@@ -126,14 +126,27 @@ class RequestExpectation {
 	 * @return $this
 	 */
 	public function withQueryParams($queryParams) {
-		$this->requestExpectations['query'] = new Expect\Predicate(function(RequestInterface $request)  use ($queryParams) {
+		$this->requestExpectations['query'] = new Expect\Predicate(function (RequestInterface $request) use ($queryParams) {
 			$expectation = is_callable($queryParams) ? $queryParams : new Expect\ArrayEquals($queryParams, 'query params');
 
 			// The client library of guzzle automatically appends the query params to the uri before
-            // invoking the middleware stack
-            parse_str($request->getUri()->getQuery(), $query);
+			// invoking the middleware stack
+			parse_str($request->getUri()->getQuery(), $query);
 			return $expectation($query);
 		}, 'query params expectation failed');
+
+		return $this;
+	}
+
+	/**
+	 * @param string $queryString
+	 * @return $this
+	 */
+	public function withQueryString($queryString) {
+		$this->requestExpectations['query'] = new Expect\Predicate(function (RequestInterface $request) use ($queryString) {
+			$expectation = is_callable($queryString) ? $queryString : new Expect\Equals($queryString, 'query string');
+			return $expectation($request->getUri()->getQuery());
+		}, 'query string expectation failed');
 
 		return $this;
 	}
@@ -143,7 +156,7 @@ class RequestExpectation {
 	 * @return $this
 	 */
 	public function withContentType($contentType) {
-		$this->requestExpectations['contentType'] = new Expect\Predicate(function(RequestInterface $request) use ($contentType) {
+		$this->requestExpectations['contentType'] = new Expect\Predicate(function (RequestInterface $request) use ($contentType) {
 			$expectation = is_callable($contentType) ? $contentType : new Expect\Matches("#$contentType#", 'content type');
 
 			return $expectation($request->getHeaderLine('Content-Type'));
@@ -161,7 +174,7 @@ class RequestExpectation {
 	 * @return $this
 	 */
 	public function withBody($stream) {
-		$this->requestExpectations['body'] = new Expect\Predicate(function(RequestInterface $request) use ($stream) {
+		$this->requestExpectations['body'] = new Expect\Predicate(function (RequestInterface $request) use ($stream) {
 			$expectation = is_callable($stream) ? $stream : new Expect\Equals((string)$stream, 'body content');
 
 			return $expectation((string)$request->getBody());
@@ -170,12 +183,12 @@ class RequestExpectation {
 		return $this;
 	}
 
-    /**
-     * @param callable|StreamInterface $stream
-     * @return $this
-     */
+	/**
+	 * @param callable|StreamInterface $stream
+	 * @return $this
+	 */
 	public function withBodyParams($params) {
-		$this->requestExpectations['body'] = new Expect\Predicate(function(RequestInterface $request) use ($params) {
+		$this->requestExpectations['body'] = new Expect\Predicate(function (RequestInterface $request) use ($params) {
 			$expectation = is_callable($params) ? $params : new Expect\ArrayEquals($params, 'body params');
 
 			$actualBodyParams = self::parseRequestBody($request);
@@ -186,40 +199,39 @@ class RequestExpectation {
 	}
 
 	private static function parseRequestBody(RequestInterface $request) {
-        if(!$request->getBody()) {
-            return [];
-        }
+		if (!$request->getBody()) {
+			return [];
+		}
 
-        $body = $request->getBody();
+		$body = $request->getBody();
 
-        if($body instanceof StreamInterface) {
-            try {
-                $body = (string)$body;
-            } catch(\Exception $e) {
-                throw new FailedRequestExpectationException('the body stream resource was not readable', false, true);
-            }
-        } else {
-            throw new FailedRequestExpectationException('body is not a stream resource', false, true);
-        }
+		if ($body instanceof StreamInterface) {
+			try {
+				$body = (string)$body;
+			} catch (\Exception $e) {
+				throw new FailedRequestExpectationException('the body stream resource was not readable', false, true);
+			}
+		} else {
+			throw new FailedRequestExpectationException('body is not a stream resource', false, true);
+		}
 
 
-        if($request->getHeaderLine('Content-Type') && $request->getHeaderLine('Content-Type') === 'application/x-www-form-urlencoded') {
-            parse_str($body, $result);
-            return $result;
-        }
+		if ($request->getHeaderLine('Content-Type') && $request->getHeaderLine('Content-Type') === 'application/x-www-form-urlencoded') {
+			parse_str($body, $result);
+			return $result;
+		}
 
-        if($request->getHeaderLine('Content-Type') && $request->getHeaderLine('Content-Type') === 'application/json') {
-            try {
-                $data = \GuzzleHttp\json_decode((string)$body, true);
-            }
-            catch (\Exception $ex) {
-                throw new FailedRequestExpectationException('body is invalid json: '.json_last_error_msg(), false, true);
-            }
+		if ($request->getHeaderLine('Content-Type') && $request->getHeaderLine('Content-Type') === 'application/json') {
+			try {
+				$data = \GuzzleHttp\json_decode((string)$body, true);
+			} catch (\Exception $ex) {
+				throw new FailedRequestExpectationException('body is invalid json: ' . json_last_error_msg(), false, true);
+			}
 
-            return $data;
-        }
+			return $data;
+		}
 
-        throw new FailedRequestExpectationException('body is a raw stream', false, true);
+		throw new FailedRequestExpectationException('body is a raw stream', false, true);
 	}
 
 	public function withJsonBodyParams(array $params) {
