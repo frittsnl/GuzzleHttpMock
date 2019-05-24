@@ -339,6 +339,21 @@ class MockTest extends \PHPUnit_Framework_TestCase {
         $this->httpMock->verify();
     }
 
+	/** @test */
+    public function shouldCompareQueryStringLiterally() {
+		$this->httpMock
+			->shouldReceiveRequest()
+			->withMethod('GET')
+			->withUrl('http://www.example.com/foo')
+			->withQueryString('param1=value1&param2=%20spaces')
+			->andRespondWithJson([ 'bar' => 'foo']);
+
+		$response1 = $this->guzzleClient
+			->get('http://www.example.com/foo?param1=value1&param2=%20spaces');
+
+		$this->assertEquals([ 'bar' => 'foo'], json_decode((string)$response1->getBody(), true));
+	}
+
 	/**
 	 * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
 	 * @test
@@ -498,7 +513,7 @@ class MockTest extends \PHPUnit_Framework_TestCase {
 				]
 			]);
 
-		
+
 		$this->httpMock->verify();
 	}
 
@@ -556,8 +571,8 @@ class MockTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException 
-	 * @test 
+	 * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
+	 * @test
 	 */
 	public function body_customLogic_notMatch_shouldFail() {
 		$this->httpMock

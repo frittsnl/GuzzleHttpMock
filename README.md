@@ -62,7 +62,7 @@ $guzzleClient = new \GuzzleHttp\Client([
 
 // Setup a request expectation
 $httpMock
-	->shouldReceiveRequest()
+    ->shouldReceiveRequest()
     ->withUrl('http://www.example.com/foo')
     ->withMethod('GET')
     ->withBodyParams([ 'foo' => 'bar' ])
@@ -125,7 +125,7 @@ The expectation setters are chainable, allowing for a fluid interface:
 
 ```php
 $httpMock
-	->shouldReceiveRequest()
+    ->shouldReceiveRequest()
     ->withUrl('http://www.example.com/foo')
     ->withMethod('POST');
 ```
@@ -139,13 +139,14 @@ Method | Notes
 ------ | ------
 `withUrl($url:string)` | URL (full absolute path)
 `withMethod($url:string)` | Http method.
-`withQuery($query:\GuzzleHttp\Query)` |
-`withQueryParams($params:array)` |
-`withContentType($contentType:string)` |
-`withJsonContentType()` |
-`withBody($stream:StreamInterface)` |
-`withBodyParams($params:array)` |
-`withJsonBodyParams($params:array)` |
+`withQuery($query:\GuzzleHttp\Query)` | Query with a Guzzle query object
+`withQueryParams($params:array)` | Query string with array 
+`withQueryString($queryString:string)` | Literal query string comparison
+`withContentType($contentType:string)` | Content Type
+`withJsonContentType()` | JSON Content Type
+`withBody($stream:StreamInterface)` | Compare request body
+`withBodyParams($params:array)` | Compare request body params
+`withJsonBodyParams($params:array)` | JSON body params
 `once()` | The request should be made a single time
 `times($callCount:number)` | The request should be made `$callCount` times.
 
@@ -156,12 +157,12 @@ By default, a request is expected to be made one time, with an Http method of 'G
 ```php
 // So this:
 $httpMock
-	->shouldReceiveRequest()
+    ->shouldReceiveRequest()
     ->withUrl('http://www.example.com/foo');
 
 // is the same as this:
 $httpMock
-	->shouldReceiveRequest()
+    ->shouldReceiveRequest()
     ->withUrl('http://www.example.com/foo')
     ->once()
     ->withMethod('GET');
@@ -174,7 +175,7 @@ In addition to specifying request expectations individually, you can also direct
 
 ```php
 $expectedRequest = new Request(
-	'PUT',
+    'PUT',
     'http://www.example.com/foo?faz=baz',
     [
 		'body'    => json_encode(['shazaam' => 'kablooey']),
@@ -193,10 +194,10 @@ All expectation methods accept either a value or a `callable` as a parameter. By
 
 ```php
 $httpMock
-	->shouldReceiveRequest()
-	->withBodyParams(function($actualParams) {
-	  return $actualParams['foo'] === 'bar';
-	});
+    ->shouldReceiveRequest()
+    ->withBodyParams(function($actualParams) {
+        return $actualParams['foo'] === 'bar';
+    });
 ```
 
 In this case, the expectation will fail if the actual request body has a `foo` params which does not equal `bar`.
@@ -250,11 +251,11 @@ You may mock a response directly using a response object:
 $response = new \GuzzleHttp\Psr7\Response(
     200,
     ['Content-Type' = 'application/json'],
-	json_encode(['foo' => 'bar' ]
+    json_encode(['foo' => 'bar' ]
 );
 
 $httpMock
-	->shouldReceiveRequest()
+    ->shouldReceiveRequest()
     ->withMethod('GET')
     ->withUrl('http://www.example.com/foo')
     ->andResponseWith($response);
@@ -315,7 +316,7 @@ In the current version of GuzzleHttpMock, any expectations which are not specifi
 
 ```php
 $httpMock
-	->shouldReceiveRequest()
+    ->shouldReceiveRequest()
     ->withUrl('http://www.example.com/foo');
 
 $guzzleClient->get('/foo', [
@@ -349,22 +350,22 @@ You can also try wrapping the offending code in a `try...catch` block, to give t
 
 ```php
 $this->httpMock
-	->shouldReceiveRequest()
+    ->shouldReceiveRequest()
     ->withXYZ()
     ->andRespondWith($aValidResponse);
 
 try {
-	$subjectUnderTest->doSomethingWhichExpectsAValidHttpResponse();
+    $subjectUnderTest->doSomethingWhichExpectsAValidHttpResponse();
 }
 catch (\Exception $ex) {
-	// uh oh, $subjectUnderTest made an unexpected request,
+    // uh oh, $subjectUnderTest made an unexpected request,
     // and now if does not have a valid response to work with!
     
     // Let's check our http mock, and see what happened
     $httpMock->verify();
     
     // If it's not a request expectation problem, throw the original error
-    $throw ex;
+    throw $ex;
 }
 ```
 
