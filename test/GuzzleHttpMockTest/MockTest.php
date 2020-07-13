@@ -2,6 +2,8 @@
 
 namespace Aeris\GuzzleHttpMock\Test\GuzzleHttpMockTest;
 
+use Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException;
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
@@ -366,10 +368,7 @@ class MockTest extends TestCase
         $this->assertEquals(['bar' => 'foo'], json_decode((string)$response1->getBody(), true));
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function url_notMatch_shouldFail()
     {
         $this->httpMock
@@ -377,6 +376,7 @@ class MockTest extends TestCase
             ->withMethod('GET')
             ->withUrl('http://www.example.com/foo');
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/shazlooey');
 
@@ -399,10 +399,7 @@ class MockTest extends TestCase
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function url_customLogic_notMatch_shouldFail()
     {
         $this->httpMock
@@ -412,16 +409,15 @@ class MockTest extends TestCase
                 return preg_match('/foo$/', $url) === 1;
             });
 
+
         $this->guzzleClient
             ->get('http://www.example.com/shablooey');
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function method_notMatch_shouldFail()
     {
         $this->httpMock
@@ -429,6 +425,7 @@ class MockTest extends TestCase
             ->withMethod('POST')
             ->withUrl('http://www.example.com/foo');
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
@@ -451,10 +448,7 @@ class MockTest extends TestCase
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function method_notMatch_customLogic_shouldFail()
     {
         $this->httpMock
@@ -464,16 +458,14 @@ class MockTest extends TestCase
             })
             ->withUrl('http://www.example.com/foo');
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->post('http://www.example.com/foo');
 
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function query_notMatch_shouldFail()
     {
         $this->httpMock
@@ -482,6 +474,7 @@ class MockTest extends TestCase
             ->withUrl('http://www.example.com/foo')
             ->withQueryParams(['foo' => 'bar']);
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/shazlooey', [
                 'query' => ['not' => 'what I expected']
@@ -512,10 +505,7 @@ class MockTest extends TestCase
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function queryParams_customLogic_notMatch_shouldFail()
     {
         $this->httpMock
@@ -526,6 +516,7 @@ class MockTest extends TestCase
                 return $actualParams['foo'] === 'notTheActualValueOfFoo';
             });
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/foo', [
                 'query' => [
@@ -538,10 +529,7 @@ class MockTest extends TestCase
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function bodyParams_notMatch_shouldFail()
     {
         $this->httpMock
@@ -550,6 +538,7 @@ class MockTest extends TestCase
             ->withUrl('http://www.example.com/foo')
             ->withBodyParams(['foo' => 'bar']);
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/foo', [
                 'form_params' => ['not' => 'what I expected']
@@ -594,10 +583,7 @@ class MockTest extends TestCase
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function body_customLogic_notMatch_shouldFail()
     {
         $this->httpMock
@@ -608,6 +594,7 @@ class MockTest extends TestCase
                 return $bodyParams['foo'] === 'bar';
             });
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/foo', [
                 'form_params' => ['foo' => 'shablooey']
@@ -649,10 +636,7 @@ class MockTest extends TestCase
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function body_arrayContains_notMatch_shouldFail()
     {
         $this->httpMock
@@ -661,6 +645,7 @@ class MockTest extends TestCase
             ->withUrl('http://www.example.com/foo')
             ->withBodyParams(new Expect\ArrayContains(['foo' => 'bar']));
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/foo', [
                 'form_params' => ['foo' => 'shablooey', 'faz' => 'baz']
@@ -719,10 +704,7 @@ class MockTest extends TestCase
         $this->httpMock->verify();
     }
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function jsonBody_notMatch_shouldFail()
     {
         $this->httpMock
@@ -731,6 +713,7 @@ class MockTest extends TestCase
             ->withUrl('http://www.example.com/foo')
             ->withJsonBodyParams(['foo' => 'bar']);
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/foo', [
                 'json' => ['not' => 'what I expected']
@@ -740,10 +723,7 @@ class MockTest extends TestCase
     }
 
 
-    /**
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     * @test
-     */
+    /** @test */
     public function shouldFailIfNoRequestIsConfigured()
     {
         $this->guzzleClient
@@ -751,30 +731,26 @@ class MockTest extends TestCase
                 'form_params' => ['not' => 'what I expected']
             ]);
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->httpMock->verify();
     }
 
-    /**
-     * @test
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     */
+    /** @test */
     public function shouldFailIfTheRequestIsNotMade()
     {
         $this->httpMock
             ->shouldReceiveRequest();
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         try {
-            throw new \Exception('too bad.');
-        } catch (\Exception $ex) {
+            throw new Exception('too bad.');
+        } catch (Exception $ex) {
             $this->httpMock->verify();
             throw $ex;
         }
     }
 
-    /**
-     * @test
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     */
+    /** @test */
     public function shouldFailIfTheRequestIsMadeMoreThanOnce()
     {
         $this->httpMock
@@ -785,16 +761,14 @@ class MockTest extends TestCase
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
         $this->httpMock->verify();
     }
 
-    /**
-     * @test
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     */
+    /** @test */
     public function shouldFailIfTheRequestIsMadeMoreThanTheSetTimes()
     {
         $this->httpMock
@@ -807,16 +781,15 @@ class MockTest extends TestCase
             ->get('http://www.example.com/foo');
         $this->guzzleClient
             ->get('http://www.example.com/foo');
+
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
         $this->httpMock->verify();
     }
 
-    /**
-     * @test
-     * @expectedException \Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException
-     */
+    /** @test */
     public function shouldFailIfTheRequestIsMadeLessThanTheSetTimes()
     {
         $this->httpMock
@@ -830,6 +803,7 @@ class MockTest extends TestCase
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
+        $this->expectException(UnexpectedHttpRequestException::class);
         $this->httpMock->verify();
     }
 
