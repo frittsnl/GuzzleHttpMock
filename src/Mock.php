@@ -18,54 +18,64 @@ use Psr\Http\Message\ResponseInterface;
  * Sets expectations against requests made with the Guzzle Http Client,
  * and mocks responses.
  */
-class Mock {
+class Mock
+{
 
-	/** @var \Aeris\GuzzleHttpMock\Expectation\RequestExpectation[] */
-	protected $requestExpectations = [];
+    /** @var \Aeris\GuzzleHttpMock\Expectation\RequestExpectation[] */
+    protected $requestExpectations = [];
 
-	/** @var UnexpectedHttpRequestException[] */
-	protected $exceptions = [];
+    /** @var UnexpectedHttpRequestException[] */
+    protected $exceptions = [];
 
-	/** @var HandlerStack */
-	protected $handlerStack = null;
+    /** @var HandlerStack */
+    protected $handlerStack = null;
 
-	public function getHandlerStackWithMiddleware() {
-	    if($this->handlerStack == null) {
-	        $this->handlerStack = HandlerStack::create($this);
+    public function getHandlerStackWithMiddleware()
+    {
+        if ($this->handlerStack == null) {
+            $this->handlerStack = HandlerStack::create($this);
         }
-	    return $this->handlerStack;
+        return $this->handlerStack;
     }
 
-	public function shouldReceiveRequest(RequestInterface &$request = null) {
-		$expectation = new RequestExpectation($request);
-		$this->requestExpectations[] = $expectation;
+    public function shouldReceiveRequest(RequestInterface &$request = null)
+    {
+        $expectation = new RequestExpectation($request);
+        $this->requestExpectations[] = $expectation;
 
-		return $expectation;
-	}
+        return $expectation;
+    }
 
-	public function verify() {
-		$exceptions = $this->exceptions;
+    /**
+     * @return bool 'true' when no exceptions occurred.
+     * @throws CompoundUnexpectedHttpRequestException
+     */
+    public function verify()
+    {
+        $exceptions = $this->exceptions;
 
-		foreach ($this->requestExpectations as $expectation) {
-			try {
-				$expectation->verify();
-			}
-			catch (UnexpectedHttpRequestException $ex) {
-				$exceptions[] = $ex;
-			}
-		}
+        foreach ($this->requestExpectations as $expectation) {
+            try {
+                $expectation->verify();
+            } catch (UnexpectedHttpRequestException $ex) {
+                $exceptions[] = $ex;
+            }
+        }
 
-		if (count($exceptions)) {
-			throw new CompoundUnexpectedHttpRequestException($exceptions);
-		}
-	}
+        if (count($exceptions)) {
+            throw new CompoundUnexpectedHttpRequestException($exceptions);
 
-	public function __invoke(RequestInterface $request, array $options)
+        } else {
+            return true;
+        }
+
+    }
+
+    public function __invoke(RequestInterface $request, array $options)
     {
         try {
-            $response = $this->makeRequest($request,$options);
-        }
-        catch (HttpMockException $error) {
+            $response = $this->makeRequest($request, $options);
+        } catch (HttpMockException $error) {
             $this->fail($error);
 
             // Set a stub response.
@@ -80,50 +90,51 @@ class Mock {
         return new FulfilledPromise($response);
     }
 
-	/**
-	 * @param RequestInterface $request
-	 * @return ResponseInterface
-	 * @throws CompoundUnexpectedHttpRequestException
-	 */
-	private function makeRequest(RequestInterface $request, array $options) {
-	    $count = count($this->requestExpectations);
-		$state = array_reduce(
-			$this->requestExpectations,
-			function (array $state, Expectation\RequestExpectation $requestExpectation) use ($request, $options, $count) {
-				// We got a successful response -- we're good to go.
-				if (isset($state['response'])) {
-					return $state;
-				}
+    /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     * @throws CompoundUnexpectedHttpRequestException
+     */
+    private function makeRequest(RequestInterface $request, array $options)
+    {
+        $count = count($this->requestExpectations);
+        $state = array_reduce(
+            $this->requestExpectations,
+            function (array $state, Expectation\RequestExpectation $requestExpectation) use ($request, $options, $count) {
+                // We got a successful response -- we're good to go.
+                if (isset($state['response'])) {
+                    return $state;
+                }
 
-				// Try to make a request against the expectation
-				try {
-					$state['response'] = $requestExpectation->makeRequest($request, $options);
-				}
-				catch (UnexpectedHttpRequestException $error) {
-					// Save the error
-					$state['errors'][] = $error;
-				}
+                // Try to make a request against the expectation
+                try {
+                    $state['response'] = $requestExpectation->makeRequest($request, $options);
+                } catch (UnexpectedHttpRequestException $error) {
+                    // Save the error
+                    $state['errors'][] = $error;
+                }
 
-				return $state;
-			},
-			[
-				'response' => null,
-				'errors' => []
-			]
-		);
+                return $state;
+            },
+            [
+                'response' => null,
+                'errors' => []
+            ]
+        );
 
-		if (is_null($state['response'])) {
-			$msg = array_reduce($state['errors'], function($msg, \Exception $err) {
-				return $msg . PHP_EOL . $err->getMessage();
-			}, "No mock matches request `{$request->getMethod()} {".(string)$request->getUri()."}`:");
+        if (is_null($state['response'])) {
+            $msg = array_reduce($state['errors'], function ($msg, \Exception $err) {
+                return $msg . PHP_EOL . $err->getMessage();
+            }, "No mock matches request `{$request->getMethod()} {" . (string)$request->getUri() . "}`:");
 
-			throw new UnexpectedHttpRequestException($msg);
-		}
+            throw new UnexpectedHttpRequestException($msg);
+        }
 
-		return $state['response'];
-	}
+        return $state['response'];
+    }
 
-	protected function fail(\Exception $error) {
-		$this->exceptions[] = $error;
-	}
+    protected function fail(\Exception $error)
+    {
+        $this->exceptions[] = $error;
+    }
 }

@@ -396,7 +396,7 @@ class MockTest extends TestCase
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -445,7 +445,7 @@ class MockTest extends TestCase
         $this->guzzleClient
             ->put('http://www.example.com/foo');
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -502,7 +502,7 @@ class MockTest extends TestCase
                 ]
             ]);
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -561,7 +561,7 @@ class MockTest extends TestCase
                 'form_params' => ['foo' => 'bar']
             ]);
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -580,7 +580,7 @@ class MockTest extends TestCase
                 'form_params' => ['foo' => 'bar']
             ]);
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -633,7 +633,7 @@ class MockTest extends TestCase
                 'form_params' => ['foo' => 'bar', 'faz' => 'baz']
             ]);
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -674,7 +674,7 @@ class MockTest extends TestCase
                 ]
             ]);
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -701,7 +701,7 @@ class MockTest extends TestCase
                 ]
             ]);
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -823,7 +823,7 @@ class MockTest extends TestCase
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -837,7 +837,7 @@ class MockTest extends TestCase
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 
     /** @test */
@@ -856,6 +856,6 @@ class MockTest extends TestCase
         $this->guzzleClient
             ->get('http://www.example.com/foo');
 
-        $this->httpMock->verify();
+        $this->assertTrue($this->httpMock->verify());
     }
 }
