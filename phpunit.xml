@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="Bootstrap.php"
+<phpunit bootstrap="vendor/autoload.php"
          backupGlobals="false"
          backupStaticAttributes="false"
          colors="true"
@@ -10,10 +10,10 @@
          processIsolation="false"
          stopOnFailure="false"
          verbose="true"
-         syntaxCheck="false">
+         >
     <testsuites>
         <testsuite name="GuzzleHttpMockTest">
-            <directory>./GuzzleHttpMockTest</directory>
+            <directory>./test/GuzzleHttpMockTest/</directory>
         </testsuite>
     </testsuites>
 </phpunit>
