@@ -42,7 +42,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Aeris\\GuzzleHttpMock\\Test\\": "tests"
+      "Aeris\\GuzzleHttpMock\\Test\\": "test/"
     }
   },
   "require-dev": {
