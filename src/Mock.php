@@ -8,6 +8,7 @@ use Aeris\GuzzleHttpMock\Exception\CompoundUnexpectedHttpRequestException;
 use Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException;
 use Aeris\GuzzleHttpMock\Expectation\RequestExpectation;
 use Aeris\GuzzleHttpMock\Exception\Exception as HttpMockException;
+use Exception;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Promise\FulfilledPromise;
 use Psr\Http\Message\RequestInterface;
@@ -21,7 +22,7 @@ use Psr\Http\Message\ResponseInterface;
 class Mock
 {
 
-    /** @var \Aeris\GuzzleHttpMock\Expectation\RequestExpectation[] */
+    /** @var RequestExpectation[] */
     protected $requestExpectations = [];
 
     /** @var UnexpectedHttpRequestException[] */
@@ -38,7 +39,7 @@ class Mock
         return $this->handlerStack;
     }
 
-    public function shouldReceiveRequest(RequestInterface &$request = null)
+    public function shouldReceiveRequest(RequestInterface $request = null)
     {
         $expectation = new RequestExpectation($request);
         $this->requestExpectations[] = $expectation;
@@ -92,15 +93,15 @@ class Mock
 
     /**
      * @param RequestInterface $request
+     * @param array $options
      * @return ResponseInterface
-     * @throws CompoundUnexpectedHttpRequestException
+     * @throws UnexpectedHttpRequestException
      */
     private function makeRequest(RequestInterface $request, array $options)
     {
-        $count = count($this->requestExpectations);
         $state = array_reduce(
             $this->requestExpectations,
-            function (array $state, Expectation\RequestExpectation $requestExpectation) use ($request, $options, $count) {
+            function (array $state, Expectation\RequestExpectation $requestExpectation) use ($request, $options) {
                 // We got a successful response -- we're good to go.
                 if (isset($state['response'])) {
                     return $state;
@@ -123,7 +124,7 @@ class Mock
         );
 
         if (is_null($state['response'])) {
-            $msg = array_reduce($state['errors'], function ($msg, \Exception $err) {
+            $msg = array_reduce($state['errors'], function ($msg, Exception $err) {
                 return $msg . PHP_EOL . $err->getMessage();
             }, "No mock matches request `{$request->getMethod()} {" . (string)$request->getUri() . "}`:");
 
@@ -133,7 +134,7 @@ class Mock
         return $state['response'];
     }
 
-    protected function fail(\Exception $error)
+    protected function fail(Exception $error)
     {
         $this->exceptions[] = $error;
     }

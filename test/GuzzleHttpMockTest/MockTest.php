@@ -22,8 +22,8 @@ class MockTest extends TestCase
     protected function setUp(): void
     {
         $this->httpMock = new Mock();
-
-        $this->guzzleClient = new GuzzleClient(['handler' => $this->httpMock->getHandlerStackWithMiddleware()]);
+        $handlerStack = $this->httpMock->getHandlerStackWithMiddleware();
+        $this->guzzleClient = new GuzzleClient(['handler' => $handlerStack]);
     }
 
     /** @test */
