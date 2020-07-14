@@ -882,4 +882,33 @@ class MockTest extends TestCase
 
         $this->assertTrue($this->httpMock->verify());
     }
+
+    /**
+     * @test
+     *
+     */
+    public function shouldResponseUsingClosure()
+    {
+        $this->httpMock
+            ->shouldReceiveRequest()
+            ->withMethod('GET')
+            ->withUrl('http://www.sundata.nl/')
+            ->times(2)
+            ->andRespondUsing(function ($requestBody, $requestOptions) {
+                return isset($requestOptions['success'])
+                    ? new Response(200)
+                    : new Response(400);
+            });
+
+        $noSuccessResponse = $this->guzzleClient
+            ->get('http://www.sundata.nl/', []);
+        $this->assertEquals(400, $noSuccessResponse->getStatusCode());
+
+        $successResponse = $this->guzzleClient
+            ->get('http://www.sundata.nl/', ['success' => 'yes please']);
+        $this->assertEquals(200, $successResponse->getStatusCode());
+
+        $this->assertTrue($this->httpMock->verify());
+    }
+
 }
