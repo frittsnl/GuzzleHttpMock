@@ -2,6 +2,7 @@
 
 namespace Aeris\GuzzleHttpMock\Test\GuzzleHttpMockTest;
 
+use Aeris\GuzzleHttpMock\Exception\CompoundUnexpectedHttpRequestException;
 use Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
@@ -839,6 +840,29 @@ class MockTest extends TestCase
 
         $this->assertTrue($this->httpMock->verify());
     }
+
+    /**
+     * @testWith [0,1,2,5]
+     * @param int $nrOfRequests
+     * @throws CompoundUnexpectedHttpRequestException
+     */
+    public function shouldPassRegardlessOfTheNumberOfRequests(int $nrOfRequests)
+    {
+        $this->httpMock
+            ->shouldReceiveRequest()
+            ->withMethod('GET')
+            ->withUrl('http://www.example.com/foo')
+            ->zeroOrMoreTimes();
+
+        /** @noinspection PhpUnusedLocalVariableInspection */
+        foreach (range(0, $nrOfRequests) as $i) {
+            $this->guzzleClient
+                ->get('http://www.example.com/foo');
+        }
+
+        $this->assertTrue($this->httpMock->verify());
+    }
+
 
     /** @test */
     public function shouldPassIfTheRequestIsMadeTheNumberOfSetTimes()
