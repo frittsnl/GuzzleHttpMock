@@ -203,13 +203,16 @@ class RequestExpectation
     }
 
     /**
-     * @param callable|StreamInterface $stream
+     * @param callable|StreamInterface $params
      * @return $this
      */
     public function withBodyParams($params)
     {
         $this->requestExpectations['body'] = new Expect\Predicate(function (RequestInterface $request) use ($params) {
-            $expectation = is_callable($params) ? $params : new Expect\ArrayEquals($params, 'body params');
+            /** @noinspection PhpParamsInspection Cannot cast to mixed[] */
+            $expectation = is_callable($params)
+                ? $params
+                : new Expect\ArrayEquals($params, 'body params');
 
             $actualBodyParams = self::parseRequestBody($request);
             return $expectation($actualBodyParams);
