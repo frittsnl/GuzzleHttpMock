@@ -10,6 +10,7 @@ use Aeris\GuzzleHttpMock\Exception\UnexpectedHttpRequestException;
 use Aeris\GuzzleHttpMock\Expect;
 use Aeris\GuzzleHttpMock\Exception\FailedRequestExpectationException;
 use Aeris\GuzzleHttpMock\Exception\InvalidRequestCountException;
+use Closure;
 use Exception;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
@@ -32,6 +33,8 @@ class RequestExpectation
 
     /** @var ResponseInterface */
     protected $mockResponse;
+    /** @var Closure */
+    private $closureForMockResponse;
 
 
     public function __construct(RequestInterface $request = null)
@@ -40,6 +43,7 @@ class RequestExpectation
 
         $this->setExpectedRequest($request);
         $this->mockResponse = $this->createResponse();
+        $this->closureForMockResponse = null;
     }
 
 
@@ -54,7 +58,9 @@ class RequestExpectation
     {
         $this->validateRequestCanBeMade($request, $options);
         $this->actualCallCount++;
-        return $this->mockResponse;
+        return is_null($this->closureForMockResponse)
+            ? $this->mockResponse
+            : ($this->closureForMockResponse)($request, $options);
     }
 
 
@@ -320,6 +326,12 @@ class RequestExpectation
     {
         $this->mockResponse = $this->mockResponse->withStatus($code);
 
+        return $this;
+    }
+
+    public function andRespondUsing(Closure $closure)
+    {
+        $this->closureForMockResponse = $closure;
         return $this;
     }
 

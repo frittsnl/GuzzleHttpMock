@@ -10,7 +10,9 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Aeris\GuzzleHttpMock\Mock;
 use Aeris\GuzzleHttpMock\Expect;
+use GuzzleHttp\RequestOptions;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
 
 class MockTest extends TestCase
 {
@@ -883,32 +885,28 @@ class MockTest extends TestCase
         $this->assertTrue($this->httpMock->verify());
     }
 
-    /**
-     * @test
-     *
-     */
+    /** @test */
     public function shouldResponseUsingClosure()
     {
+        $concatBodyAndFooHeader = function (RequestInterface $requestBody) {
+            $bodyContents = (string)$requestBody->getBody();
+            $fooHeader = $requestBody->getHeader('foo')[0];
+            return new Response(200, [], "$bodyContents $fooHeader");
+        };
+
         $this->httpMock
             ->shouldReceiveRequest()
             ->withMethod('GET')
             ->withUrl('http://www.sundata.nl/')
-            ->times(2)
-            ->andRespondUsing(function ($requestBody, $requestOptions) {
-                return isset($requestOptions['success'])
-                    ? new Response(200)
-                    : new Response(400);
-            });
+            ->withBody(new Expect\Any())
+            ->andRespondUsing($concatBodyAndFooHeader);
 
-        $noSuccessResponse = $this->guzzleClient
-            ->get('http://www.sundata.nl/', []);
-        $this->assertEquals(400, $noSuccessResponse->getStatusCode());
-
-        $successResponse = $this->guzzleClient
-            ->get('http://www.sundata.nl/', ['success' => 'yes please']);
-        $this->assertEquals(200, $successResponse->getStatusCode());
-
-        $this->assertTrue($this->httpMock->verify());
+        $rsp = $this->guzzleClient
+            ->get('http://www.sundata.nl/', [
+                RequestOptions::BODY => "Marco",
+                RequestOptions::HEADERS => ['foo' => 'Polo']
+            ]);
+        $this->assertEquals('Marco Polo', $rsp->getBody()->getContents());
     }
 
 }
