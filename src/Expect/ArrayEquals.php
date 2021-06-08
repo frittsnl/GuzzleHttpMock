@@ -14,7 +14,7 @@ class ArrayEquals {
 	protected $fieldName;
 
 	/**
-	 * @param \mixed[] $expectedArray
+	 * @param mixed[] $expectedArray
 	 * @param $fieldName
 	 */
 	public function __construct($expectedArray, $fieldName = null) {
