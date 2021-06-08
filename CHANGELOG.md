@@ -1,3 +1,7 @@
+# v2.1.1
+
+* FIX: Updated to php 8
+
 # v2.1.0
 
 * FIX: Updated to php 7.1
