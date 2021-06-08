@@ -10,3 +10,5 @@ data/cache/
 data/*.bak
 data/DoctrineORMModule/
 .elasticbeanstalk/
+composer.phar
+docker-compose.yml
