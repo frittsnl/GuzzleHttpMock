@@ -1,8 +1,13 @@
-# v1.3.0
+# v2.1.0
+
 * FIX: Updated to php 7.1
 * ADD: Option for responding to a RequestInterface via closure
 * FIX: Tests for `zeroOrMoreTimes`
 
+# v2.0.0
+
+* ADD: Add compatibility to Guzzle 6, breaking compatibility with prior versions
+ 
 # v1.2.0
 
 * MOD: Support newer Guzzle versions
