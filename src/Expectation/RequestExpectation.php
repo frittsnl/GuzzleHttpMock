@@ -14,7 +14,6 @@ use Closure;
 use Exception;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use function GuzzleHttp\Psr7\stream_for;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -346,7 +345,8 @@ class RequestExpectation
             $encoder = Encoder::HttpQuery();
         }
 
-        return stream_for($encoder($data));
+
+        return \GuzzleHttp\Psr7\Utils::streamFor($encoder($data));
     }
 
     /**
